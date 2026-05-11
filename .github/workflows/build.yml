@@ -1,0 +1,42 @@
+name: "Build WOL WS Plugin"
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build OpenWrt Plugin
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup OpenWrt SDK
+        run: |
+          wget https://downloads.openwrt.org/releases/23.05.3/targets/x86/64/openwrt-sdk-23.05.3-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz
+          tar xf openwrt-sdk*.tar.xz
+          mv openwrt-sdk-* openwrt-sdk
+
+      - name: Prepare feeds
+        run: |
+          cd openwrt-sdk
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+          chmod +x ../luci-app-wol-ws/root/etc/init.d/wol_ws
+          cp -r ../luci-app-wol-ws package/
+
+      - name: Build plugin
+        run: |
+          cd openwrt-sdk
+          make defconfig
+          make package/luci-app-wol-ws/compile V=s
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: luci-app-wol-ws_x86_64
+          path: openwrt-sdk/bin/**/*.ipk
+
+

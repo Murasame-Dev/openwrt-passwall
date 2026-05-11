@@ -1,0 +1,8 @@
+config wol_ws 'config'
+	option enabled '0'
+	option ws_connect '0'
+	option ws_server ''
+	option local_server '0'
+	option local_post '0'
+	option rate_limit '0'
+	option auth_key ''
